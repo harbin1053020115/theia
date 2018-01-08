@@ -16,6 +16,7 @@ import { WidgetManager } from '@theia/core/lib/browser/widget-manager';
 import { PROBLEM_KIND } from '../../common/problem-marker';
 import { ProblemManager, ProblemStat } from './problem-manager';
 import { StatusBar, StatusBarAlignment } from '@theia/core/lib/browser/status-bar/status-bar';
+import { Widget } from '@phosphor/widgets';
 
 export namespace ProblemCommands {
     export const OPEN: Command = {
@@ -66,16 +67,19 @@ export class ProblemContribution implements CommandContribution, MenuContributio
 
     registerCommands(commands: CommandRegistry): void {
         commands.registerCommand(ProblemCommands.OPEN, {
-            execute: () => this.openProblemsView()
+            execute: () => this.openProblemsView(true)
         });
     }
 
-    protected async openProblemsView(): Promise<void> {
+    protected async openProblemsView(activate: boolean): Promise<Widget> {
         const problemsWidget = await this.widgetFactory.getOrCreateWidget(PROBLEM_KIND);
         if (!problemsWidget.isAttached) {
             this.shell.addToBottomArea(problemsWidget);
         }
-        this.shell.activateWidget(problemsWidget.id);
+        if (activate) {
+            this.shell.activateWidget(problemsWidget.id);
+        }
+        return problemsWidget;
     }
 
     registerMenus(menus: MenuModelRegistry): void {

@@ -17,6 +17,7 @@ import { Command, CommandContribution, CommandRegistry } from '@theia/core/lib/c
 import { KeybindingContribution, KeybindingRegistry } from '@theia/core/lib/common/keybinding';
 import { KeyCode, Key, Modifier } from '@theia/core/lib/common/keys';
 import { MenuContribution, MenuModelRegistry } from '@theia/core/lib/common/menu';
+import { Widget } from '@phosphor/widgets';
 
 export const GIT_WIDGET_FACTORY_ID = 'git';
 
@@ -63,21 +64,24 @@ export class GitFrontendContribution implements CommandContribution, KeybindingC
     }
 
     async initializeLayout(app: FrontendApplication): Promise<void> {
-        this.openGitView();
+        this.openGitView(false);
     }
 
     registerCommands(commands: CommandRegistry): void {
         commands.registerCommand(GitCommands.OPEN, {
-            execute: () => this.openGitView()
+            execute: () => this.openGitView(true)
         });
     }
 
-    protected async openGitView(): Promise<void> {
+    protected async openGitView(activate: boolean): Promise<Widget> {
         const gitWidget = await this.widgetManager.getOrCreateWidget(GIT_WIDGET_FACTORY_ID);
         if (!gitWidget.isAttached) {
             this.shell.addToLeftArea(gitWidget, { rank: 200 });
         }
-        this.shell.activateWidget(gitWidget.id);
+        if (activate) {
+            this.shell.activateWidget(gitWidget.id);
+        }
+        return gitWidget;
     }
 
     registerKeybindings(keybindings: KeybindingRegistry): void {

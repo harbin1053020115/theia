@@ -16,13 +16,13 @@ export class TopPanel {
     }
 
     openNewTerminal() {
-        this.clickMenuTab('File');
-        this.clickSubMenu('New Terminal');
+        this.clickMenuTab('View');
+        this.clickSubMenu('Terminal');
     }
 
     openProblemsView() {
         this.clickMenuTab('View');
-        this.clickSubMenu('Open Problems View');
+        this.clickSubMenu('Problems');
     }
 
     isSubMenuVisible(): boolean {

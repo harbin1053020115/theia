@@ -74,9 +74,8 @@ describe('theia top panel (menubar)', () => {
             bottomPanel.waitForTerminal();
             expect(bottomPanel.isTerminalVisible()).to.be.true;
 
-            // TODO implement close command for the bottom panel
-            //bottomPanel.closeTerminal();
-            //expect(mainPage.isTerminalVisible()).to.be.false;
+            bottomPanel.closeTerminal();
+            expect(bottomPanel.isTerminalVisible()).to.be.false;
         });
     });
 
@@ -86,9 +85,8 @@ describe('theia top panel (menubar)', () => {
             bottomPanel.waitForProblemsView();
             expect(bottomPanel.isProblemsViewVisible()).to.be.true;
 
-            // TODO implement close command for the bottom panel
-            //bottomPanel.closeProblemsView();
-            //expect(bottomPanel.isProblemsViewVisible()).to.be.false;
+            bottomPanel.closeProblemsView();
+            expect(bottomPanel.isProblemsViewVisible()).to.be.false;
         });
     });
 });

@@ -12,6 +12,7 @@ import { CommandContribution, CommandRegistry, Command } from '@theia/core/lib/c
 import { KeybindingContribution, KeybindingRegistry } from '@theia/core/lib/common/keybinding';
 import { MenuContribution, MenuModelRegistry } from '@theia/core/lib/common/menu';
 import { KeyCode, Key, Modifier } from '@theia/core/lib/common/keys';
+import { Widget } from '@phosphor/widgets';
 
 export const OUTLINE_WIDGET_FACTORY_ID = 'outline-view';
 
@@ -31,21 +32,24 @@ export class OutlineViewContribution implements CommandContribution, KeybindingC
     ) { }
 
     async initializeLayout(app: FrontendApplication): Promise<void> {
-        this.openOutlineView();
+        this.openOutlineView(false);
     }
 
     registerCommands(commands: CommandRegistry): void {
         commands.registerCommand(OutlineViewCommands.OPEN, {
-            execute: () => this.openOutlineView()
+            execute: () => this.openOutlineView(true)
         });
     }
 
-    protected async openOutlineView(): Promise<void> {
+    protected async openOutlineView(activate: boolean): Promise<Widget> {
         const outlineView = await this.widgetManager.getOrCreateWidget(OUTLINE_WIDGET_FACTORY_ID);
         if (!outlineView.isAttached) {
             this.shell.addToRightArea(outlineView, { rank: 100 });
         }
-        this.shell.activateWidget(outlineView.id);
+        if (activate) {
+            this.shell.activateWidget(outlineView.id);
+        }
+        return outlineView;
     }
 
     registerKeybindings(keybindings: KeybindingRegistry): void {

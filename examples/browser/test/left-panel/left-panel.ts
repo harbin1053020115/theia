@@ -26,14 +26,14 @@ export class LeftPanel {
     }
 
     isFileTreeVisible(): boolean {
-        return (this.driver.element('#files').getAttribute('class').split(' ').indexOf('p-mod-hidden') === -1)
+        return (this.driver.element('#files').getAttribute('class').split(' ').indexOf('p-mod-hidden') === -1);
     }
 
     isGitContainerVisible(): boolean {
-        return (this.driver.element('#theia-gitContainer').getAttribute('class').split(' ').indexOf('p-mod-hidden') === -1)
+        return (this.driver.element('#theia-gitContainer').getAttribute('class').split(' ').indexOf('p-mod-hidden') === -1);
     }
 
     isExtensionTabVisible(): boolean {
-        return (this.driver.element('#extensions').getAttribute('class').split(' ').indexOf('p-mod-hidden') === -1)
+        return (this.driver.element('#extensions').getAttribute('class').split(' ').indexOf('p-mod-hidden') === -1);
     }
 }

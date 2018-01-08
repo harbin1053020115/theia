@@ -14,6 +14,7 @@ import { CommandContribution, Command, CommandRegistry } from '@theia/core/lib/c
 import { KeybindingContribution, KeybindingRegistry } from '@theia/core/lib/common/keybinding';
 import { MenuContribution, MenuModelRegistry } from '@theia/core/lib/common/menu';
 import { KeyCode, Key, Modifier } from '@theia/core/lib/common/keys';
+import { Widget } from '@phosphor/widgets';
 
 export const EXTENSIONS_WIDGET_FACTORY_ID = 'extensions';
 
@@ -49,21 +50,24 @@ export class ExtensionContribution implements CommandContribution, KeybindingCon
     }
 
     async initializeLayout(app: FrontendApplication): Promise<void> {
-        this.openExtensionsView();
+        this.openExtensionsView(false);
     }
 
     registerCommands(commands: CommandRegistry): void {
         commands.registerCommand(ExtensionCommands.OPEN, {
-            execute: () => this.openExtensionsView()
+            execute: () => this.openExtensionsView(true)
         });
     }
 
-    protected async openExtensionsView(): Promise<void> {
+    protected async openExtensionsView(activate: boolean): Promise<Widget> {
         const extensionWidget = await this.widgetManager.getOrCreateWidget(EXTENSIONS_WIDGET_FACTORY_ID);
         if (!extensionWidget.isAttached) {
             this.shell.addToLeftArea(extensionWidget, { rank: 300 });
         }
-        this.shell.activateWidget(extensionWidget.id);
+        if (activate) {
+            this.shell.activateWidget(extensionWidget.id);
+        }
+        return extensionWidget;
     }
 
     registerKeybindings(keybindings: KeybindingRegistry): void {

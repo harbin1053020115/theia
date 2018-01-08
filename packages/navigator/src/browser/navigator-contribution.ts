@@ -12,6 +12,7 @@ import { WidgetManager } from '@theia/core/lib/browser/widget-manager';
 import { Command, CommandContribution, CommandRegistry } from '@theia/core/lib/common/command';
 import { KeybindingContribution, KeybindingRegistry } from '@theia/core/lib/common/keybinding';
 import { KeyCode, Key, Modifier } from '@theia/core/lib/common/keys';
+import { Widget } from '@phosphor/widgets';
 
 export namespace FileNavigatorCommands {
     export const OPEN: Command = {
@@ -31,21 +32,24 @@ export class FileNavigatorContribution implements CommandContribution, Keybindin
     ) { }
 
     async initializeLayout(app: FrontendApplication): Promise<void> {
-        this.openFileNavigatorView();
+        this.openFileNavigatorView(false);
     }
 
     registerCommands(commands: CommandRegistry): void {
         commands.registerCommand(FileNavigatorCommands.OPEN, {
-            execute: () => this.openFileNavigatorView()
+            execute: () => this.openFileNavigatorView(true)
         });
     }
 
-    protected async openFileNavigatorView(): Promise<void> {
+    protected async openFileNavigatorView(activate: boolean): Promise<Widget> {
         const fileNavigator = await this.widgetManager.getOrCreateWidget(FILE_NAVIGATOR_ID);
         if (!fileNavigator.isAttached) {
             this.shell.addToLeftArea(fileNavigator, { rank: 100 });
         }
-        this.shell.activateWidget(fileNavigator.id);
+        if (activate) {
+            this.shell.activateWidget(fileNavigator.id);
+        }
+        return fileNavigator;
     }
 
     registerKeybindings(keybindings: KeybindingRegistry): void {
