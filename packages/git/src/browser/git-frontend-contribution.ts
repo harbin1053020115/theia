@@ -6,22 +6,34 @@
  */
 import { injectable, inject } from "inversify";
 import { GitRepositoryProvider } from './git-repository-provider';
-import { FrontendApplication, FrontendApplicationContribution } from '@theia/core/lib/browser';
+import { FrontendApplication, FrontendApplicationContribution, ApplicationShell, CommonMenus } from '@theia/core/lib/browser';
 import { WidgetManager } from '@theia/core/lib/browser/widget-manager';
 import { StatusBar, StatusBarAlignment } from "@theia/core/lib/browser/status-bar/status-bar";
 import { Git } from '../common';
 import { GitWatcher, GitStatusChangeEvent } from '../common/git-watcher';
 import { GIT_COMMANDS } from './git-command';
 import { DisposableCollection } from "@theia/core";
+import { Command, CommandContribution, CommandRegistry } from '@theia/core/lib/common/command';
+import { KeybindingContribution, KeybindingRegistry } from '@theia/core/lib/common/keybinding';
+import { KeyCode, Key, Modifier } from '@theia/core/lib/common/keys';
+import { MenuContribution, MenuModelRegistry } from '@theia/core/lib/common/menu';
 
 export const GIT_WIDGET_FACTORY_ID = 'git';
 
+export namespace GitCommands {
+    export const OPEN: Command = {
+        id: 'git:open',
+        label: 'Open Git View'
+    };
+}
+
 @injectable()
-export class GitFrontendContribution implements FrontendApplicationContribution {
+export class GitFrontendContribution implements CommandContribution, KeybindingContribution, MenuContribution, FrontendApplicationContribution {
 
     protected toDispose = new DisposableCollection();
 
     constructor(
+        @inject(ApplicationShell) protected readonly shell: ApplicationShell,
         @inject(WidgetManager) protected readonly widgetManager: WidgetManager,
         @inject(GitRepositoryProvider) protected readonly repositoryProvider: GitRepositoryProvider,
         @inject(Git) protected readonly git: Git,
@@ -51,9 +63,36 @@ export class GitFrontendContribution implements FrontendApplicationContribution 
     }
 
     async initializeLayout(app: FrontendApplication): Promise<void> {
-        const widget = await this.widgetManager.getOrCreateWidget(GIT_WIDGET_FACTORY_ID);
-        app.shell.addToLeftArea(widget, {
-            rank: 200
+        this.openGitView();
+    }
+
+    registerCommands(commands: CommandRegistry): void {
+        commands.registerCommand(GitCommands.OPEN, {
+            execute: () => this.openGitView()
+        });
+    }
+
+    protected async openGitView(): Promise<void> {
+        const gitWidget = await this.widgetManager.getOrCreateWidget(GIT_WIDGET_FACTORY_ID);
+        if (!gitWidget.isAttached) {
+            this.shell.addToLeftArea(gitWidget, { rank: 200 });
+        }
+        this.shell.activateWidget(gitWidget.id);
+    }
+
+    registerKeybindings(keybindings: KeybindingRegistry): void {
+        keybindings.registerKeybinding({
+            commandId: GitCommands.OPEN.id,
+            keyCode: KeyCode.createKeyCode({
+                first: Key.KEY_S, modifiers: [Modifier.M2, Modifier.M1]
+            })
+        });
+    }
+
+    registerMenus(registry: MenuModelRegistry): void {
+        registry.registerMenuAction(CommonMenus.VIEW, {
+            commandId: GitCommands.OPEN.id,
+            label: 'Git'
         });
     }
 

@@ -7,14 +7,28 @@
 
 import { injectable, inject } from "inversify";
 import { MessageService } from "@theia/core";
-import { FrontendApplication, FrontendApplicationContribution } from "@theia/core/lib/browser";
+import { FrontendApplication, FrontendApplicationContribution, CommonMenus, ApplicationShell } from '@theia/core/lib/browser';
 import { ExtensionManager } from '../common';
 import { WidgetManager } from '@theia/core/lib/browser/widget-manager';
+import { CommandContribution, Command, CommandRegistry } from '@theia/core/lib/common/command';
+import { KeybindingContribution, KeybindingRegistry } from '@theia/core/lib/common/keybinding';
+import { MenuContribution, MenuModelRegistry } from '@theia/core/lib/common/menu';
+import { KeyCode, Key, Modifier } from '@theia/core/lib/common/keys';
+
+export const EXTENSIONS_WIDGET_FACTORY_ID = 'extensions';
+
+export namespace ExtensionCommands {
+    export const OPEN: Command = {
+        id: 'extensions:open',
+        label: 'Open Extensions View'
+    };
+}
 
 @injectable()
-export class ExtensionContribution implements FrontendApplicationContribution {
+export class ExtensionContribution implements CommandContribution, KeybindingContribution, MenuContribution, FrontendApplicationContribution {
 
     constructor(
+        @inject(ApplicationShell) protected readonly shell: ApplicationShell,
         @inject(WidgetManager) protected readonly widgetManager: WidgetManager,
         @inject(ExtensionManager) protected readonly extensionManager: ExtensionManager,
         @inject(MessageService) protected readonly messageService: MessageService,
@@ -35,9 +49,36 @@ export class ExtensionContribution implements FrontendApplicationContribution {
     }
 
     async initializeLayout(app: FrontendApplication): Promise<void> {
-        const extensionWidget = await this.widgetManager.getOrCreateWidget('extensions');
-        app.shell.addToLeftArea(extensionWidget, {
-            rank: 300
+        this.openExtensionsView();
+    }
+
+    registerCommands(commands: CommandRegistry): void {
+        commands.registerCommand(ExtensionCommands.OPEN, {
+            execute: () => this.openExtensionsView()
+        });
+    }
+
+    protected async openExtensionsView(): Promise<void> {
+        const extensionWidget = await this.widgetManager.getOrCreateWidget(EXTENSIONS_WIDGET_FACTORY_ID);
+        if (!extensionWidget.isAttached) {
+            this.shell.addToLeftArea(extensionWidget, { rank: 300 });
+        }
+        this.shell.activateWidget(extensionWidget.id);
+    }
+
+    registerKeybindings(keybindings: KeybindingRegistry): void {
+        keybindings.registerKeybinding({
+            commandId: ExtensionCommands.OPEN.id,
+            keyCode: KeyCode.createKeyCode({
+                first: Key.KEY_X, modifiers: [Modifier.M2, Modifier.M1]
+            })
+        });
+    }
+
+    registerMenus(registry: MenuModelRegistry) {
+        registry.registerMenuAction(CommonMenus.VIEW, {
+            commandId: ExtensionCommands.OPEN.id,
+            label: 'Extensions'
         });
     }
 

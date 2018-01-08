@@ -11,7 +11,7 @@ import {
     MenuContribution, KeybindingContribution, KeybindingRegistry,
     KeyCode, Key, Modifier, CommandRegistry
 } from '@theia/core/lib/common';
-import { FrontendApplication, CommonMenus, FrontendApplicationContribution } from '@theia/core/lib/browser';
+import { FrontendApplication, CommonMenus, FrontendApplicationContribution, ApplicationShell } from '@theia/core/lib/browser';
 import { WidgetManager } from '@theia/core/lib/browser/widget-manager';
 import { PROBLEM_KIND } from '../../common/problem-marker';
 import { ProblemManager, ProblemStat } from './problem-manager';
@@ -29,7 +29,7 @@ export class ProblemContribution implements CommandContribution, MenuContributio
 
     constructor(
         @inject(WidgetManager) protected readonly widgetFactory: WidgetManager,
-        @inject(FrontendApplication) protected readonly app: FrontendApplication,
+        @inject(ApplicationShell) protected readonly shell: ApplicationShell,
         @inject(ProblemManager) protected readonly problemManager: ProblemManager,
         @inject(StatusBar) protected readonly statusBar: StatusBar) { }
 
@@ -73,14 +73,15 @@ export class ProblemContribution implements CommandContribution, MenuContributio
     protected async openProblemsView(): Promise<void> {
         const problemsWidget = await this.widgetFactory.getOrCreateWidget(PROBLEM_KIND);
         if (!problemsWidget.isAttached) {
-            this.app.shell.addToBottomArea(problemsWidget);
+            this.shell.addToBottomArea(problemsWidget);
         }
-        this.app.shell.activateWidget(problemsWidget.id);
+        this.shell.activateWidget(problemsWidget.id);
     }
 
     registerMenus(menus: MenuModelRegistry): void {
         menus.registerMenuAction(CommonMenus.VIEW, {
-            commandId: ProblemCommands.OPEN.id
+            commandId: ProblemCommands.OPEN.id,
+            label: 'Problems'
         });
     }
 }

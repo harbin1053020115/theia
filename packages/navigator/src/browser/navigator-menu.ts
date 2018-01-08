@@ -7,8 +7,9 @@
 
 import { injectable, inject } from "inversify";
 import { MenuContribution, MenuModelRegistry, MenuPath } from "@theia/core/lib/common";
-import { OpenerService, CommonCommands } from '@theia/core/lib/browser';
+import { OpenerService, CommonCommands, CommonMenus } from '@theia/core/lib/browser';
 import { WorkspaceCommands } from '@theia/workspace/lib/browser/workspace-commands';
+import { FileNavigatorCommands } from "./navigator-contribution";
 
 export const NAVIGATOR_CONTEXT_MENU: MenuPath = ['navigator-context-menu'];
 
@@ -28,6 +29,11 @@ export class NavigatorMenuContribution implements MenuContribution {
     ) { }
 
     registerMenus(registry: MenuModelRegistry) {
+        registry.registerMenuAction(CommonMenus.VIEW, {
+            commandId: FileNavigatorCommands.OPEN.id,
+            label: 'Files'
+        });
+
         registry.registerMenuAction(NavigatorContextMenu.OPEN, {
             commandId: WorkspaceCommands.FILE_OPEN.id
         });

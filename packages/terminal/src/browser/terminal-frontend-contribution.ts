@@ -54,8 +54,9 @@ export class TerminalFrontendContribution implements CommandContribution, MenuCo
     }
 
     registerMenus(menus: MenuModelRegistry): void {
-        menus.registerMenuAction(CommonMenus.FILE_OPEN, {
-            commandId: TerminalCommands.NEW.id
+        menus.registerMenuAction(CommonMenus.VIEW, {
+            commandId: TerminalCommands.NEW.id,
+            label: 'Terminal'
         });
     }
 

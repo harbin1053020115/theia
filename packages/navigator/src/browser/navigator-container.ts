@@ -5,13 +5,17 @@
  * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
  */
 
-import { interfaces, Container } from 'inversify';
+import { Container, interfaces } from 'inversify';
 import { ITree, ITreeModel, TreeProps, defaultTreeProps } from "@theia/core/lib/browser";
-import { createFileTreeContainer, FileTree, FileTreeModel, FileTreeWidget, FileTreeServices } from "@theia/filesystem/lib/browser";
+import { createFileTreeContainer, FileTree, FileTreeModel, FileTreeWidget, FileTreeServices, DirNode } from '@theia/filesystem/lib/browser';
 import { FileNavigatorTree } from "./navigator-tree";
 import { FileNavigatorModel, FileNavigatorServices } from "./navigator-model";
 import { FileNavigatorWidget } from "./navigator-widget";
 import { NAVIGATOR_CONTEXT_MENU } from "./navigator-menu";
+import { SelectionService } from '@theia/core/lib/common';
+import { WorkspaceService } from '@theia/workspace/lib/browser';
+import { LabelProvider } from '@theia/core/lib/browser/label-provider';
+import URI from '@theia/core/lib/common/uri';
 
 export const FILE_NAVIGATOR_PROPS = <TreeProps>{
     ...defaultTreeProps,
@@ -41,5 +45,25 @@ export function createFileNavigatorContainer(parent: interfaces.Container): Cont
 }
 
 export function createFileNavigatorWidget(parent: interfaces.Container): FileNavigatorWidget {
-    return createFileNavigatorContainer(parent).get(FileNavigatorWidget);
+    const fileNavigator = createFileNavigatorContainer(parent).get(FileNavigatorWidget);
+
+    const selectionService = parent.get(SelectionService);
+    fileNavigator.model.onSelectionChanged(selection =>
+        selectionService.selection = selection
+    );
+
+    const workspaceService = parent.get(WorkspaceService);
+    const labelProvider = parent.get(LabelProvider);
+    workspaceService.root.then(async resolvedRoot => {
+        if (resolvedRoot) {
+            const uri = new URI(resolvedRoot.uri);
+            const label = labelProvider.getName(uri);
+            const icon = await labelProvider.getIcon(resolvedRoot);
+            fileNavigator.model.root = DirNode.createRoot(resolvedRoot, label, icon);
+        } else {
+            fileNavigator.update();
+        }
+    });
+
+    return fileNavigator;
 }
