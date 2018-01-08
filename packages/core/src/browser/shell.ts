@@ -1053,8 +1053,18 @@ export class SideBarHandler {
      * Handle the `widgetRemoved` signal from the stacked panel.
      */
     private onWidgetRemoved(sender: StackedPanel, widget: Widget): void {
-        ArrayExt.removeAt(this.items, this.findWidgetIndex(widget));
+        const items = this.items;
+        const index = this.findWidgetIndex(widget);
+        ArrayExt.removeAt(items, index);
+        const shouldUpdateCurrent = this.sideBar.currentTitle === widget.title;
         this.sideBar.removeTab(widget.title);
+        if (shouldUpdateCurrent) {
+            if (index < items.length) {
+                this.sideBar.currentTitle = items[index].widget.title;
+            } else if (items.length > 0) {
+                this.sideBar.currentTitle = items[items.length - 1].widget.title;
+            }
+        }
         this.refreshVisibility();
     }
 }
